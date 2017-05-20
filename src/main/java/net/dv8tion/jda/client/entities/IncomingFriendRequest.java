@@ -23,8 +23,8 @@ import javax.annotation.CheckReturnValue;
 public interface IncomingFriendRequest extends Relationship
 {
     @CheckReturnValue
-    RestAction accept();
+    RestAction<Void> accept();
 
     @CheckReturnValue
-    RestAction ignore();
+    RestAction<Void> ignore();
 }

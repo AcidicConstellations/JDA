@@ -16,10 +16,13 @@
 
 package net.dv8tion.jda.client.entities;
 
+import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.User;
 
 public interface Relationship
 {
+    JDA getJDA();
+
     RelationshipType getType();
 
     User getUser();

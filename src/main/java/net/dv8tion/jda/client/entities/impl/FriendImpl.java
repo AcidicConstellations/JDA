@@ -16,6 +16,7 @@
 
 package net.dv8tion.jda.client.entities.impl;
 
+import java.time.OffsetDateTime;
 import net.dv8tion.jda.client.entities.Friend;
 import net.dv8tion.jda.client.entities.RelationshipType;
 import net.dv8tion.jda.core.OnlineStatus;
@@ -23,92 +24,54 @@ import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.requests.RestAction;
 
-import java.time.OffsetDateTime;
-
-public class FriendImpl implements Friend
+public class FriendImpl extends AbstractRelationshipImpl implements Friend
 {
-    private final User user;
-
-    private OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
-    private OffsetDateTime lastModifiedTime;
     private Game game;
+    private OffsetDateTime lastModifiedTime;
+    private OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
 
-    public FriendImpl(User user)
+    public FriendImpl(final User user)
     {
-        this.user = user;
-    }
-
-    @Override
-    public RelationshipType getType()
-    {
-        return RelationshipType.FRIEND;
-    }
-
-    @Override
-    public User getUser()
-    {
-        return user;
-    }
-
-    @Override
-    public OnlineStatus getOnlineStatus()
-    {
-        return onlineStatus;
-    }
-
-    @Override
-    public OffsetDateTime getOnlineStatusModifiedTime()
-    {
-        return lastModifiedTime;
-    }
-
-    @Override
-    public RestAction removeFriend()
-    {
-        return null;
+        super(user, RelationshipType.FRIEND);
     }
 
     @Override
     public Game getGame()
     {
-        return game;
+        return this.game;
     }
 
     @Override
-    public String toString()
+    public OnlineStatus getOnlineStatus()
     {
-        return "Friend(" + user.toString() + ")";
+        return this.onlineStatus;
     }
 
     @Override
-    public boolean equals(Object o)
+    public OffsetDateTime getOnlineStatusModifiedTime()
     {
-        if (!(o instanceof Friend))
-            return false;
-
-        Friend oFriend = (Friend) o;
-        return user.equals(oFriend.getUser());
+        return this.lastModifiedTime;
     }
 
     @Override
-    public int hashCode()
+    public RestAction<Void> removeFriend()
     {
-        return ("Friend " + user.getId()).hashCode();
+        return this.deleteRelationship();
     }
 
-    public FriendImpl setOnlineStatus(OnlineStatus onlineStatus)
-    {
-        this.onlineStatus = onlineStatus;
-        return this;
-    }
-
-    public FriendImpl setGame(Game game)
+    public FriendImpl setGame(final Game game)
     {
         this.game = game;
         return this;
     }
 
-    public FriendImpl setOnlineStatusModifiedTime(OffsetDateTime lastModifiedTime)
+    public FriendImpl setOnlineStatus(final OnlineStatus onlineStatus)
+    {
+        this.onlineStatus = onlineStatus;
+        return this;
+    }
+
+    public FriendImpl setOnlineStatusModifiedTime(final OffsetDateTime lastModifiedTime)
     {
         this.lastModifiedTime = lastModifiedTime;
         return this;

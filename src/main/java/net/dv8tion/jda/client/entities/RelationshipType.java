@@ -18,23 +18,30 @@ package net.dv8tion.jda.client.entities;
 
 public enum RelationshipType
 {
-    NO_RELATIONSHIP(0),
-    FRIEND(1),
-    BLOCKED(2),
-    INCOMING_FRIEND_REQUEST(3),
-    OUTGOING_FRIEND_REQUEST(4),
-    UNKNOWN(-1);
+    NO_RELATIONSHIP(0, "NONE"),
+    FRIEND(1, "Friend"),
+    BLOCKED(2, "BlockedUser"),
+    INCOMING_FRIEND_REQUEST(3, "IFR"),
+    OUTGOING_FRIEND_REQUEST(4, "OFR"),
+    UNKNOWN(-1, "");
 
     private final int key;
+    private final String name;
 
-    RelationshipType(int key)
+    RelationshipType(int key, String name)
     {
         this.key = key;
+        this.name=name;
     }
 
     public int getKey()
     {
         return key;
+    }
+
+    public String getName()
+    {
+        return this.name;
     }
 
     public static RelationshipType fromKey(int key)

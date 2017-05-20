@@ -23,5 +23,5 @@ import javax.annotation.CheckReturnValue;
 public interface OutgoingFriendRequest extends Relationship
 {
     @CheckReturnValue
-    RestAction cancel();
+    RestAction<Void> cancel();
 }

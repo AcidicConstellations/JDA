@@ -21,52 +21,16 @@ import net.dv8tion.jda.client.entities.RelationshipType;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.requests.RestAction;
 
-public class BlockedUserImpl implements BlockedUser
+public class BlockedUserImpl extends AbstractRelationshipImpl implements BlockedUser
 {
-    private final User user;
-
-    public BlockedUserImpl(User user)
+    public BlockedUserImpl(final User user)
     {
-        this.user = user;
+        super(user, RelationshipType.BLOCKED);
     }
 
     @Override
-    public RelationshipType getType()
+    public RestAction<Void> unblockUser()
     {
-        return RelationshipType.BLOCKED;
-    }
-
-    @Override
-    public User getUser()
-    {
-        return user;
-    }
-
-    @Override
-    public RestAction unblockUser()
-    {
-        return null;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "BlockedUser:" + user.getName() + "(" + user.getIdLong() + ")";
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return ("BlockedUser " + user.getId()).hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (!(o instanceof BlockedUser))
-            return false;
-
-        BlockedUser oBU = (BlockedUser) o;
-        return this.user.equals(oBU.getUser());
+        return this.deleteRelationship();
     }
 }

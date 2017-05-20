@@ -25,14 +25,14 @@ import javax.annotation.CheckReturnValue;
 
 public interface Friend extends Relationship
 {
+    Game getGame();
+
     OnlineStatus getOnlineStatus();
 
     OffsetDateTime getOnlineStatusModifiedTime();
 
-    Game getGame();
-
     @CheckReturnValue
-    RestAction removeFriend();
+    RestAction<Void> removeFriend();
 
-    //Create new Group
+    // TODO: Create new Group
 }

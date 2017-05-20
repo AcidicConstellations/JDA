@@ -23,5 +23,5 @@ import javax.annotation.CheckReturnValue;
 public interface BlockedUser extends Relationship
 {
     @CheckReturnValue
-    RestAction unblockUser();
+    RestAction<Void> unblockUser();
 }
