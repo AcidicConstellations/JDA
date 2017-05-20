@@ -47,7 +47,7 @@ public class JDAClientImpl implements JDAClient
     protected final TLongObjectMap<Group> groups = MiscUtil.newLongMap();
     protected final TLongObjectMap<Relationship> relationships = MiscUtil.newLongMap();
     protected final TLongObjectMap<CallUser> callUsers = MiscUtil.newLongMap();
-    protected UserSettingsImpl userSettings;
+    protected final UserSettingsImpl userSettings;
 
     public JDAClientImpl(JDAImpl api)
     {
@@ -103,20 +103,13 @@ public class JDAClientImpl implements JDAClient
     @Override
     public List<Relationship> getRelationships(RelationshipType type)
     {
-        return Collections.unmodifiableList(relationships.valueCollection().stream()
-                .filter(r -> r.getType().equals(type))
-                .collect(Collectors.toList()));
+        return getRelationships(type, Relationship.class);
     }
 
     @Override
     public List<Relationship> getRelationships(RelationshipType type, String name, boolean ignoreCase)
     {
-        return Collections.unmodifiableList(relationships.valueCollection().stream()
-                .filter(r -> r.getType().equals(type))
-                .filter(r -> (ignoreCase
-                        ? r.getUser().getName().equalsIgnoreCase(name)
-                        : r.getUser().getName().equals(name)))
-                .collect(Collectors.toList()));
+        return getRelationships(type, Relationship.class, name, ignoreCase);
     }
 
     @Override
@@ -139,6 +132,18 @@ public class JDAClientImpl implements JDAClient
     public Relationship getRelationship(Member member)
     {
         return getRelationship(member.getUser());
+    }
+
+    @Override
+    public Relationship getRelationship(User user, RelationshipType type)
+    {
+        return getRelationshipById(user.getIdLong(), type);
+    }
+
+    @Override
+    public Relationship getRelationship(Member member, RelationshipType type)
+    {
+        return getRelationship(member.getUser(), type);
     }
 
     @Override
@@ -173,19 +178,16 @@ public class JDAClientImpl implements JDAClient
             return null;
     }
 
-
     @Override
-    @SuppressWarnings("unchecked")
     public List<Friend> getFriends()
     {
-        return (List<Friend>) (List) getRelationships(RelationshipType.FRIEND);
+        return getRelationships(RelationshipType.FRIEND, Friend.class);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<Friend> getFriendsByName(String name, boolean ignoreCase)
     {
-        return (List<Friend>) (List) getRelationships(RelationshipType.FRIEND, name, ignoreCase);
+        return getRelationships(RelationshipType.FRIEND, Friend.class, name, ignoreCase);
     }
 
     @Override
@@ -203,13 +205,148 @@ public class JDAClientImpl implements JDAClient
     @Override
     public Friend getFriendById(String id)
     {
-        return (Friend) getRelationshipById(id, RelationshipType.FRIEND);
+        return getFriendById(MiscUtil.parseSnowflake(id));
     }
 
     @Override
     public Friend getFriendById(long id)
     {
-        return (Friend) getRelationshipById(id, RelationshipType.FRIEND);
+        return getRelationshipById(id, RelationshipType.FRIEND, Friend.class);
+    }
+
+    @Override
+    public List<BlockedUser> getBlockedUsers()
+    {
+        return getRelationships(RelationshipType.BLOCKED, BlockedUser.class);
+    }
+
+    @Override
+    public List<BlockedUser> getBlockedUsersByName(String name, boolean ignoreCase)
+    {
+        return getRelationships(RelationshipType.BLOCKED, BlockedUser.class, name, ignoreCase);
+    }
+
+    @Override
+    public BlockedUser getBlockedUser(User user)
+    {
+        return getBlockedUserById(user.getIdLong());
+    }
+
+    @Override
+    public BlockedUser getBlockedUser(Member member)
+    {
+        return getBlockedUser(member.getUser());
+    }
+
+    @Override
+    public BlockedUser getBlockedUserById(String id)
+    {
+        return getBlockedUserById(MiscUtil.parseSnowflake(id));
+    }
+
+    @Override
+    public BlockedUser getBlockedUserById(long id)
+    {
+        return getRelationshipById(id, RelationshipType.BLOCKED, BlockedUser.class);
+    }
+
+    @Override
+    public List<IncomingFriendRequest> getIncomingFriendRequests()
+    {
+        return getRelationships(RelationshipType.INCOMING_FRIEND_REQUEST, IncomingFriendRequest.class);
+    }
+
+    @Override
+    public List<IncomingFriendRequest> getIncomingFriendRequestsByName(String name, boolean ignoreCase)
+    {
+        return getRelationships(RelationshipType.INCOMING_FRIEND_REQUEST, IncomingFriendRequest.class, name, ignoreCase);
+    }
+
+    @Override
+    public IncomingFriendRequest getIncomingFriendRequest(User user)
+    {
+        return getIncomingFriendRequestById(user.getIdLong());
+    }
+
+    @Override
+    public IncomingFriendRequest getIncomingFriendRequest(Member member)
+    {
+        return getIncomingFriendRequest(member.getUser());
+    }
+
+    @Override
+    public IncomingFriendRequest getIncomingFriendRequestById(String id)
+    {
+        return getIncomingFriendRequestById(MiscUtil.parseSnowflake(id));
+    }
+
+    @Override
+    public IncomingFriendRequest getIncomingFriendRequestById(long id)
+    {
+        return getRelationshipById(id, RelationshipType.INCOMING_FRIEND_REQUEST, IncomingFriendRequest.class);
+    }
+
+    @Override
+    public List<OutgoingFriendRequest> getOutgoingFriendRequests()
+    {
+        return getRelationships(RelationshipType.OUTGOING_FRIEND_REQUEST, OutgoingFriendRequest.class);
+    }
+
+    @Override
+    public List<OutgoingFriendRequest> getOutgoingFriendRequestsByName(String name, boolean ignoreCase)
+    {
+        return getRelationships(RelationshipType.OUTGOING_FRIEND_REQUEST, OutgoingFriendRequest.class, name, ignoreCase);
+    }
+
+    @Override
+    public OutgoingFriendRequest getOutgoingFriendRequest(User user)
+    {
+        return getOutgoingFriendRequestById(user.getIdLong());
+    }
+
+    @Override
+    public OutgoingFriendRequest getOutgoingFriendRequest(Member member)
+    {
+        return getOutgoingFriendRequest(member.getUser());
+    }
+
+    @Override
+    public OutgoingFriendRequest getOutgoingFriendRequestById(String id)
+    {
+        return getOutgoingFriendRequestById(MiscUtil.parseSnowflake(id));
+    }
+
+    private <T extends Relationship> List<T> getRelationships(RelationshipType type, Class<T> clazz)
+    {
+        return Collections.unmodifiableList(relationships.valueCollection().stream()
+                .filter(r -> r.getType().equals(type))
+                .map(clazz::cast)
+                .collect(Collectors.toList()));
+    }
+
+    private <T extends Relationship> T getRelationshipById(long id, RelationshipType type, Class<T> clazz)
+    {
+        Relationship relationship = getRelationshipById(id);
+        if (relationship.getType() == type)
+            return clazz.cast(relationship);
+        return null;
+    }
+
+    private <T extends Relationship> List<T> getRelationships(RelationshipType type, Class<T> clazz, String name, boolean ignoreCase)
+    {
+        return Collections.unmodifiableList(relationships.valueCollection().stream()
+                .filter(r -> r.getType().equals(type))
+                .filter(r -> (ignoreCase
+                        ? r.getUser().getName().equalsIgnoreCase(name)
+                        : r.getUser().getName().equals(name)))
+                .map(clazz::cast)
+                .collect(Collectors.toList()));
+    }
+
+    @Override
+    public OutgoingFriendRequest getOutgoingFriendRequestById(long id)
+    {
+        return getRelationshipById(id, RelationshipType.OUTGOING_FRIEND_REQUEST, OutgoingFriendRequest.class);
     }
 
     @Override

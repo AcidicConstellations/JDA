@@ -39,13 +39,16 @@ public interface JDAClient
     Group getGroupById(long id);
 
     List<Relationship> getRelationships();
-    List<Relationship> getRelationships(RelationshipType type);
-    List<Relationship> getRelationships(RelationshipType type, String name, boolean ignoreCase);
     List<Relationship> getRelationshipsByName(String name, boolean ignoreCase);
     Relationship getRelationship(User user);
     Relationship getRelationship(Member member);
     Relationship getRelationshipById(String id);
     Relationship getRelationshipById(long id);
+
+    List<Relationship> getRelationships(RelationshipType type);
+    List<Relationship> getRelationships(RelationshipType type, String name, boolean ignoreCase);
+    Relationship getRelationship(User user, RelationshipType type);
+    Relationship getRelationship(Member member, RelationshipType type);
     Relationship getRelationshipById(String id, RelationshipType type);
     Relationship getRelationshipById(long id, RelationshipType type);
 
@@ -55,6 +58,27 @@ public interface JDAClient
     Friend getFriend(Member member);
     Friend getFriendById(String id);
     Friend getFriendById(long id);
+
+    List<BlockedUser> getBlockedUsers();
+    List<BlockedUser> getBlockedUsersByName(String name, boolean ignoreCase);
+    BlockedUser getBlockedUser(User user);
+    BlockedUser getBlockedUser(Member member);
+    BlockedUser getBlockedUserById(String id);
+    BlockedUser getBlockedUserById(long id);
+
+    List<IncomingFriendRequest> getIncomingFriendRequests();
+    List<IncomingFriendRequest> getIncomingFriendRequestsByName(String name, boolean ignoreCase);
+    IncomingFriendRequest getIncomingFriendRequest(User user);
+    IncomingFriendRequest getIncomingFriendRequest(Member member);
+    IncomingFriendRequest getIncomingFriendRequestById(String id);
+    IncomingFriendRequest getIncomingFriendRequestById(long id);
+
+    List<OutgoingFriendRequest> getOutgoingFriendRequests();
+    List<OutgoingFriendRequest> getOutgoingFriendRequestsByName(String name, boolean ignoreCase);
+    OutgoingFriendRequest getOutgoingFriendRequest(User user);
+    OutgoingFriendRequest getOutgoingFriendRequest(Member member);
+    OutgoingFriendRequest getOutgoingFriendRequestById(String id);
+    OutgoingFriendRequest getOutgoingFriendRequestById(long id);
 
     /**
      * Retrieves the recent mentions for the currently logged in

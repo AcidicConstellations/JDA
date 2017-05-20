@@ -42,7 +42,6 @@ public class UserSettingsImpl implements UserSettings
         return api;
     }
 
-
     @Override
     public OnlineStatus getStatus()
     {

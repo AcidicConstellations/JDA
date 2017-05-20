@@ -63,7 +63,8 @@ public class ApplicationImpl implements Application
         if (this.hasBot())
             return new RestAction.EmptyRestAction<>(getJDA(), this.bot);
 
-        return new RestAction<Application.Bot>(this.api, Route.Applications.CREATE_BOT.compile(getId()))
+        Route.CompiledRoute route = Route.Applications.CREATE_BOT.compile(getId());
+        return new RestAction<Application.Bot>(this.api, route)
         {
             @Override
             protected void handleResponse(final Response response, final Request<Application.Bot> request)
@@ -79,7 +80,8 @@ public class ApplicationImpl implements Application
     @Override
     public RestAction<Void> delete()
     {
-        return new RestAction<Void>(this.api, Route.Applications.DELETE_APPLICATION.compile(getId()))
+        Route.CompiledRoute route = Route.Applications.DELETE_APPLICATION.compile(getId());
+        return new RestAction<Void>(this.api, route)
         {
             @Override
             protected void handleResponse(final Response response, final Request<Void> request)
@@ -178,7 +180,7 @@ public class ApplicationImpl implements Application
         }
         return mng;
     }
-    
+
     @Override
     public String getName()
     {

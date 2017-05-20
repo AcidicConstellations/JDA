@@ -149,7 +149,7 @@ public class GroupImpl implements Group
     }
 
     @Override
-    public RestAction leaveGroup()
+    public RestAction<Void> leaveGroup()
     {
         return null;
     }
@@ -215,12 +215,6 @@ public class GroupImpl implements Group
     {
         this.lastMessageId = lastMessageId;
         return this;
-    }
-
-    private void checkNull(Object obj, String name)
-    {
-        if (obj == null)
-            throw new NullPointerException("Provided " + name + " was null!");
     }
 
     @Override
