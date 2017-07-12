@@ -16,13 +16,16 @@
 package net.dv8tion.jda.core;
 
 import com.neovisionaries.ws.client.WebSocketFactory;
-import net.dv8tion.jda.core.JDA.Status;
 import net.dv8tion.jda.core.audio.factory.IAudioSendFactory;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.exceptions.AccountTypeException;
+import net.dv8tion.jda.core.events.Event;
+import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
+import net.dv8tion.jda.core.hooks.EventListener;
 import net.dv8tion.jda.core.hooks.IEventManager;
+import net.dv8tion.jda.core.hooks.SubscribeEvent;
 import net.dv8tion.jda.core.managers.impl.PresenceImpl;
 import okhttp3.OkHttpClient;
 import net.dv8tion.jda.core.utils.Checks;
@@ -46,7 +49,7 @@ import java.util.List;
  */
 public class JDABuilder
 {
-    protected final List<Object> listeners;
+    protected final List<Object> listeners = new LinkedList<>();
 
     protected OkHttpClient.Builder httpClientBuilder = null;
     protected WebSocketFactory wsFactory = null;
@@ -54,7 +57,7 @@ public class JDABuilder
     protected String token = null;
     protected IEventManager eventManager = null;
     protected IAudioSendFactory audioSendFactory = null;
-    protected JDA.ShardInfo shardInfo = null;
+    protected JDAImpl.ShardInfoImpl shardInfo = null;
     protected Game game = null;
     protected OnlineStatus status = OnlineStatus.ONLINE;
     protected int maxReconnectDelay = 900;
@@ -80,7 +83,6 @@ public class JDABuilder
         if (accountType == null)
             throw new NullPointerException("Provided AccountType was null!");
         this.accountType = accountType;
-        listeners = new LinkedList<>();
     }
 
     /**
@@ -386,7 +388,7 @@ public class JDABuilder
     }
 
     /**
-     * Adds all provided listeners to the list of listeners that will be used to populate the {@link net.dv8tion.jda.core.JDA} object.
+     * Adds all provided listeners to the list of listeners that will be used to populate the {@link net.dv8tion.jda.core.JDA JDA} object.
      * <br>This uses the {@link net.dv8tion.jda.core.hooks.InterfacedEventManager InterfacedEventListener} by default.
      * <br>To switch to the {@link net.dv8tion.jda.core.hooks.AnnotatedEventManager AnnotatedEventManager},
      * use {@link #setEventManager(net.dv8tion.jda.core.hooks.IEventManager) setEventManager(new AnnotatedEventManager())}.
@@ -474,7 +476,7 @@ public class JDABuilder
             throw new AccountTypeException(AccountType.BOT);
         if (shardId < 0 || shardTotal < 1 || shardId >= shardTotal)
             throw new RuntimeException("This configuration of shardId and shardTotal is not allowed! 0 <= shardId < shardTotal with shardTotal > 0");
-        shardInfo = new JDA.ShardInfo(shardId, shardTotal);
+        shardInfo = new JDAImpl.ShardInfoImpl(shardId, shardTotal);
         return this;
     }
 
@@ -544,11 +546,41 @@ public class JDABuilder
      */
     public JDA buildBlocking() throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException
     {
+        ReadyListener listener = new ReadyListener();
+        this.listeners.add(listener);
         JDA jda = buildAsync();
-        while(jda.getStatus() != Status.CONNECTED)
+        synchronized (listener)
         {
-            Thread.sleep(50);
+            while (!listener.isReady())
+            {
+                listener.wait();
+            }
         }
         return jda;
+    }
+
+    private static class ReadyListener implements EventListener
+    {
+        private boolean ready = false;
+
+        public boolean isReady()
+        {
+            return ready;
+        }
+
+        @Override
+        @SubscribeEvent
+        public void onEvent(Event event)
+        {
+            if (event instanceof ReadyEvent)
+            {
+                event.getJDA().removeEventListener(this);
+                this.ready = true;
+                synchronized (this)
+                {
+                    this.notifyAll();
+                }
+            }
+        }
     }
 }
