@@ -17,6 +17,15 @@
 package net.dv8tion.jda.core.entities;
 
 import gnu.trove.map.TLongObjectMap;
+import java.awt.Color;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import net.dv8tion.jda.bot.entities.ApplicationInfo;
 import net.dv8tion.jda.bot.entities.impl.ApplicationInfoImpl;
 import net.dv8tion.jda.client.entities.*;
@@ -36,16 +45,6 @@ import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.awt.Color;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class EntityBuilder
 {
@@ -1281,5 +1280,99 @@ public class EntityBuilder
     private Map<String, AuditLogChange> changeToMap(Set<AuditLogChange> changesList)
     {
         return changesList.stream().collect(Collectors.toMap(AuditLogChange::getKey, UnaryOperator.identity()));
+    }
+
+    public FriendSuggestion createFriendSuggestion(JSONObject object)
+    {
+        JSONArray array = object.getJSONArray("reasons");
+        List<FriendSuggestion.Reason> reasons = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++)
+            reasons.add(createFriendSuggestionReason(array.getJSONObject(i)));
+
+        User user = createFakeUser(object.getJSONObject("suggested_user"), false);
+
+        return new FriendSuggestionImpl(reasons, user);
+    }
+
+    public FriendSuggestion.Reason createFriendSuggestionReason(JSONObject object)
+    {
+        String name = object.getString("name");
+        String platformType = object.getString("platform_type");
+        int type = object.getInt("type");
+
+        return new FriendSuggestionImpl.ReasonImpl(name, platformType, type);
+    }
+
+    public GuildSettingsImpl createGuildSettings(JSONObject object)
+    {
+        if (object.isNull("guild_id"))
+        {
+            WebSocketClient.LOG.debug("Received a guild settings for a  guild with a null id");
+            return null;
+        }
+        String guildId = object.getString("guild_id");
+        final Guild guild = api.getGuildById(guildId);
+        if (guild == null)
+        {
+            WebSocketClient.LOG.debug("Received a guild settings for an unknown guild with id " + guildId);
+            return null;
+        }
+
+        JSONArray array = object.getJSONArray("channel_overrides");
+        final List<GuildSettings.ChannelOverride> channelOverrides = new ArrayList<>(guild.getTextChannels().size());
+        for (int i = 0; i < array.length(); i++)
+            channelOverrides.add(createGuildSettingsOverride(array.getJSONObject(i))); // TODO: create missing overrides
+
+        final GuildSettings.NotificationLevel messageNotifications = GuildSettings.NotificationLevel.fromKey(object.getInt("message_notifications"));
+        final boolean mobilePush = object.getBoolean("mobile_push");
+        final boolean muted = object.getBoolean("muted");
+        final boolean suppressEveryone = object.getBoolean("suppress_everyone");
+
+        GuildSettingsImpl guildSettings = new GuildSettingsImpl(channelOverrides, guild, messageNotifications, mobilePush, muted, suppressEveryone);
+
+        ((GuildImpl) guild).setGuildSettings(guildSettings);
+
+        return guildSettings;
+    }
+
+    public GuildSettings.ChannelOverride createGuildSettingsOverride(JSONObject object)
+    {
+        String channelId= object.getString ("channel_id");
+        final TextChannel channel = api.getTextChannelById(channelId);
+
+        if (channel == null)
+        {
+            WebSocketClient.LOG.debug("Received a guild settings notification level override for an unknown channel with id " + channelId);
+            return null;
+        }
+
+        final GuildSettings.NotificationLevel messageNotifications = GuildSettings.NotificationLevel.fromKey(object.getInt("message_notifications"));
+        final boolean muted = object.getBoolean("muted");
+        return new GuildSettingsImpl.ChannelOverrideImpl(channel, messageNotifications, muted);
+    }
+
+    public GuildSettingsImpl createDefaultGuildSettings(Guild guild)
+    {
+        final List<GuildSettings.ChannelOverride> channelOverrides = new ArrayList<>(guild.getTextChannels().size());
+        for (TextChannel channel : guild.getTextChannels())
+            channelOverrides.add(createDefaultGuildSettingsOverride(channel));
+
+        final GuildSettings.NotificationLevel messageNotifications = GuildSettings.NotificationLevel.fromKey(guild.getDefaultNotificationLevel().getKey());
+        final boolean mobilePush = true;
+        final boolean muted = false;
+        final boolean suppressEveryone = false;;
+
+        GuildSettingsImpl guildSettings = new GuildSettingsImpl(channelOverrides, guild, messageNotifications, mobilePush, muted, suppressEveryone);
+
+        ((GuildImpl) guild).setGuildSettings(guildSettings);
+
+        return guildSettings;
+    }
+
+    public GuildSettings.ChannelOverride createDefaultGuildSettingsOverride(TextChannel channel)
+    {
+        final GuildSettings.NotificationLevel messageNotifications = GuildSettings.NotificationLevel.DEFAULT;
+        final boolean muted = false;
+        return new GuildSettingsImpl.ChannelOverrideImpl(channel, messageNotifications, muted);
     }
 }

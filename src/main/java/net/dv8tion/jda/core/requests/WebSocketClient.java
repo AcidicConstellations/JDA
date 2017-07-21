@@ -963,13 +963,16 @@ public class WebSocketClient extends WebSocketAdapter implements WebSocketListen
 
         if (api.getAccountType() == AccountType.CLIENT)
         {
-            handlers.put("CALL_CREATE",              new CallCreateHandler(api));
-            handlers.put("CALL_DELETE",              new CallDeleteHandler(api));
-            handlers.put("CALL_UPDATE",              new CallUpdateHandler(api));
-            handlers.put("CHANNEL_RECIPIENT_ADD",    new ChannelRecipientAddHandler(api));
-            handlers.put("CHANNEL_RECIPIENT_REMOVE", new ChannelRecipientRemoveHandler(api));
-            handlers.put("RELATIONSHIP_ADD",         new RelationshipAddHandler(api));
-            handlers.put("RELATIONSHIP_REMOVE",      new RelationshipRemoveHandler(api));
+            handlers.put("CALL_CREATE",                new CallCreateHandler(api));
+            handlers.put("CALL_DELETE",                new CallDeleteHandler(api));
+            handlers.put("CALL_UPDATE",                new CallUpdateHandler(api));
+            handlers.put("CHANNEL_RECIPIENT_ADD",      new ChannelRecipientAddHandler(api));
+            handlers.put("CHANNEL_RECIPIENT_REMOVE",   new ChannelRecipientRemoveHandler(api));
+            handlers.put("RELATIONSHIP_ADD",           new RelationshipAddHandler(api));
+            handlers.put("RELATIONSHIP_REMOVE",        new RelationshipRemoveHandler(api));
+            handlers.put("USER_SETTINGS_UPDATE",       new UserSettingsUpdateHandler(api));
+            handlers.put("USER_GUILD_SETTINGS_UPDATE", new GuildSettingsUpdateHandler(api));
+            handlers.put("USER_NOTE_UPDATE",           new NoteUpdateHandler(api));
 
             handlers.put("MESSAGE_ACK", new SocketHandler(api)
             {

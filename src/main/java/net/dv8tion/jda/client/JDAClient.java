@@ -18,13 +18,14 @@ package net.dv8tion.jda.client;
 
 import net.dv8tion.jda.client.entities.*;
 import net.dv8tion.jda.client.requests.restaction.ApplicationAction;
+import net.dv8tion.jda.client.requests.restaction.SearchPaginationAction;
 import net.dv8tion.jda.client.requests.restaction.pagination.MentionPaginationAction;
 import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.exceptions.ErrorResponseException;
+import net.dv8tion.jda.core.requests.ErrorResponse;
 import net.dv8tion.jda.core.requests.RestAction;
-
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.CheckReturnValue;
@@ -33,31 +34,44 @@ public interface JDAClient
 {
     JDA getJDA();
 
+    RestAction<Group> createGroup(Friend... friends);
+    RestAction<Group> createGroup(Collection<Friend> friends);
+    RestAction<Group> createGroup(long... friendIds);
+    RestAction<Group> createGroup(String... friendIds);
+
     List<Group> getGroups();
     List<Group> getGroupsByName(String name, boolean ignoreCase);
     Group getGroupById(String id);
     Group getGroupById(long id);
 
+    // relationship stuff
+
     List<Relationship> getRelationships();
     List<Relationship> getRelationshipsByName(String name, boolean ignoreCase);
     Relationship getRelationship(User user);
-    Relationship getRelationship(Member member);
     Relationship getRelationshipById(String id);
     Relationship getRelationshipById(long id);
+    boolean hasRelationship(User user);
+    boolean hasRelationship(String userId);
+    boolean hasRelationship(long userId);
 
     List<Relationship> getRelationships(RelationshipType type);
     List<Relationship> getRelationships(RelationshipType type, String name, boolean ignoreCase);
     Relationship getRelationship(User user, RelationshipType type);
-    Relationship getRelationship(Member member, RelationshipType type);
     Relationship getRelationshipById(String id, RelationshipType type);
     Relationship getRelationshipById(long id, RelationshipType type);
+    boolean hasRelationship(User user, RelationshipType type);
+    boolean hasRelationship(String userId, RelationshipType type);
+    boolean hasRelationship(long userId, RelationshipType type);
 
     List<Friend> getFriends();
     List<Friend> getFriendsByName(String name, boolean ignoreCase);
     Friend getFriend(User user);
-    Friend getFriend(Member member);
     Friend getFriendById(String id);
     Friend getFriendById(long id);
+    boolean isFriend(User user);
+    boolean isFriend(String userId);
+    boolean isFriend(long userId);
 
     List<BlockedUser> getBlockedUsers();
     List<BlockedUser> getBlockedUsersByName(String name, boolean ignoreCase);
@@ -65,21 +79,61 @@ public interface JDAClient
     BlockedUser getBlockedUser(Member member);
     BlockedUser getBlockedUserById(String id);
     BlockedUser getBlockedUserById(long id);
+    boolean isBlocked(User user);
+    boolean isBlocked(String userId);
+    boolean isBlocked(long userId);
 
     List<IncomingFriendRequest> getIncomingFriendRequests();
     List<IncomingFriendRequest> getIncomingFriendRequestsByName(String name, boolean ignoreCase);
     IncomingFriendRequest getIncomingFriendRequest(User user);
-    IncomingFriendRequest getIncomingFriendRequest(Member member);
     IncomingFriendRequest getIncomingFriendRequestById(String id);
     IncomingFriendRequest getIncomingFriendRequestById(long id);
+    boolean isFriendRquestIncoming(User user);
+    boolean isFriendRquestIncoming(String userId);
+    boolean isFriendRquestIncoming(long userId);
 
     List<OutgoingFriendRequest> getOutgoingFriendRequests();
     List<OutgoingFriendRequest> getOutgoingFriendRequestsByName(String name, boolean ignoreCase);
     OutgoingFriendRequest getOutgoingFriendRequest(User user);
-    OutgoingFriendRequest getOutgoingFriendRequest(Member member);
     OutgoingFriendRequest getOutgoingFriendRequestById(String id);
     OutgoingFriendRequest getOutgoingFriendRequestById(long id);
+    boolean isFriendRquestOutgoing(User user);
+    boolean isFriendRquestOutgoing(String userId);
+    boolean isFriendRquestOutgoing(long userId);
 
+    RestAction<List<FriendSuggestion>> getFriendSuggestions();
+
+    /**
+     * @throws ErrorResponseException with {@link ErrorResponse#UNKNOWN_TAG}
+     */
+    RestAction<Void> sendFriedRequest(String name, int discriminator);
+
+    RestAction<Void> sendFriedRequest(User user);
+    RestAction<Void> sendFriedRequest(String user);
+    RestAction<Void> sendFriedRequest(long user);
+
+    RestAction<Void> block(User user);
+    RestAction<Void> block(String user);
+    RestAction<Void> block(long user);
+
+    String getNote(User user);
+    String getNote(String user);
+    String getNote(long user);
+
+    RestAction<Void> setNote(User user, String text);
+    RestAction<Void> setNote(String user, String text);
+    RestAction<Void> setNote(long user, String text);
+
+    UserSettings getUserSettings();
+
+    GuildSettings getGuildSettings(Guild guild);
+    GuildSettings getGuildSettings(String guild);
+    GuildSettings getGuildSettings(long guild);
+
+    SearchPaginationAction search(Guild guild);
+    SearchPaginationAction search(PrivateChannel channel);
+    SearchPaginationAction search(Group group);
+    
     /**
      * Retrieves the recent mentions for the currently logged in
      * client account.
@@ -113,8 +167,6 @@ public interface JDAClient
      */
     @CheckReturnValue
     MentionPaginationAction getRecentMentions(Guild guild);
-
-    UserSettings getSettings();
 
     /**
      * Creates a new {@link net.dv8tion.jda.client.entities.Application Application} for this user account

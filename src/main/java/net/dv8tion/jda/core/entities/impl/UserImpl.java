@@ -42,6 +42,7 @@ public class UserImpl implements User
     protected PrivateChannel privateChannel;
     protected boolean bot;
     protected boolean fake = false;
+    protected String note;
 
     public UserImpl(long id, JDAImpl api)
     {
@@ -92,6 +93,10 @@ public class UserImpl implements User
         return getAvatarUrl() == null ? getDefaultAvatarUrl() : getAvatarUrl();
     }
 
+    public String getNote()
+    {
+        return note;
+    }
 
     @Override
     public boolean hasPrivateChannel()
@@ -230,6 +235,11 @@ public class UserImpl implements User
     {
         this.fake = fake;
         return this;
+    }
+
+    public void setNote(String note)
+    {
+        this.note = note;
     }
 
     @Override

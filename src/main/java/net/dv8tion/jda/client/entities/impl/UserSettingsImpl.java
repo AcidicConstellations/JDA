@@ -16,141 +16,284 @@
 
 package net.dv8tion.jda.client.entities.impl;
 
+import java.util.List;
+import java.util.Map;
 import net.dv8tion.jda.client.entities.UserSettings;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.entities.Guild;
 
-import java.util.List;
-import java.util.Locale;
-
 public class UserSettingsImpl implements UserSettings
 {
+    protected final JDA api;
 
-    private final JDA api;
+    protected int afkTimeout;
+    protected boolean convertEmoticons;
+    protected boolean defaultGuildsRestricted;
+    protected boolean detectPlatformAccounts;
+    protected boolean developerMode;
+    protected boolean enableTtsCommand;
+    protected ContentFilterLevel explicitContentFilter;
+    protected Map<String, Boolean> friendSourceFlags;
+    protected List<Guild> guildPositions = null;
+    protected boolean inlineAttachmentMedia;
+    protected boolean inlineEmbedMedia;
+    protected Locale locale;
+    protected boolean messageDisplayCompact;
+    protected boolean renderEmbeds;
+    protected boolean renderReactions;
+    protected List<Guild> restrictedGuilds = null;
+    protected boolean showCurrentGame;
+    protected OnlineStatus status;
+    protected Theme theme;
+    protected int timezoneOffset;
 
-    private OnlineStatus status = OnlineStatus.UNKNOWN;
-
-    public UserSettingsImpl(JDA api)
+    public UserSettingsImpl(final JDA api)
     {
         this.api = api;
     }
 
     @Override
-    public JDA getJDA()
+    public boolean equals(final Object obj)
     {
-        return api;
+        return obj instanceof UserSettings && this.api.getSelfUser().equals(((UserSettingsImpl) obj).getJDA().getSelfUser());
     }
 
     @Override
-    public OnlineStatus getStatus()
+    public int getAfkTimeout()
     {
-        return status;
+        return this.afkTimeout;
     }
 
     @Override
-    public Locale getLocale()
+    public boolean getConvertEmoticons()
     {
-        return null;
+        return this.convertEmoticons;
+    }
+
+    @Override
+    public boolean getDefaultGuildsRestricted()
+    {
+        return this.defaultGuildsRestricted;
+    }
+
+    @Override
+    public boolean getDetectPlatformAccounts()
+    {
+        return this.detectPlatformAccounts;
+    }
+
+    @Override
+    public boolean getDeveloperMode()
+    {
+        return this.developerMode;
+    }
+
+    @Override
+    public boolean getEnableTtsCommand()
+    {
+        return this.enableTtsCommand;
+    }
+
+    @Override
+    public ContentFilterLevel getExplicitContentFilter()
+    {
+        return this.explicitContentFilter;
+    }
+
+    @Override
+    public Map<String, Boolean> getFriendSourceFlags()
+    {
+        return this.friendSourceFlags;
     }
 
     @Override
     public List<Guild> getGuildPositions()
     {
-        return null;
+        return this.guildPositions;
+    }
+
+    @Override
+    public boolean getInlineAttachmentMedia()
+    {
+        return this.inlineAttachmentMedia;
+    }
+
+    @Override
+    public boolean getInlineEmbedMedia()
+    {
+        return this.inlineEmbedMedia;
+    }
+
+    @Override
+    public JDA getJDA()
+    {
+        return this.api;
+    }
+
+    @Override
+    public Locale getLocale()
+    {
+        return this.locale;
+    }
+
+    @Override
+    public boolean getMessageDisplayCompact()
+    {
+        return this.messageDisplayCompact;
+    }
+
+    @Override
+    public boolean getRenderEmbeds()
+    {
+        return this.renderEmbeds;
+    }
+
+    @Override
+    public boolean getRenderReactions()
+    {
+        return this.renderReactions;
     }
 
     @Override
     public List<Guild> getRestrictedGuilds()
     {
-        return null;
+        return this.restrictedGuilds;
     }
 
     @Override
-    public boolean isAllowEmailFriendRequest()
+    public boolean getShowCurrentGame()
     {
-        return false;
+        return this.showCurrentGame;
     }
 
     @Override
-    public boolean isConvertEmoticons()
+    public OnlineStatus getStatus()
     {
-        return false;
+        return this.status;
     }
 
     @Override
-    public boolean isDetectPlatformAccounts()
+    public Theme getTheme()
     {
-        return false;
+        return this.theme;
     }
 
     @Override
-    public boolean isDeveloperMode()
+    public int getTimezoneOffset()
     {
-        return false;
+        return this.timezoneOffset;
     }
-
-    @Override
-    public boolean isEnableTTS()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isShowCurrentGame()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isRenderEmbeds()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isMessageDisplayCompact()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isInlineEmbedMedia()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isInlineAttachmentMedia()
-    {
-        return false;
-    }
-
-    /* -- Setters -- */
-
-    public UserSettingsImpl setStatus(OnlineStatus status)
-    {
-        this.status = status;
-        return this;
-    }
-
-    /* -- Object overrides -- */
 
     @Override
     public int hashCode()
     {
-        return Long.hashCode(getJDA().getSelfUser().getIdLong());
+        return Long.hashCode(this.getJDA().getSelfUser().getIdLong());
     }
 
-    @Override
-    public boolean equals(Object obj)
+    public void setAfkTimeout(final int afkTimeout)
     {
-        return obj instanceof UserSettingsImpl && getJDA().equals(((UserSettingsImpl) obj).getJDA());
+        this.afkTimeout = afkTimeout;
+    }
+
+    public void setConvertEmoticons(final boolean convertEmoticons)
+    {
+        this.convertEmoticons = convertEmoticons;
+    }
+
+    public void setDefaultGuildsRestricted(final boolean defaultGuildsRestricted)
+    {
+        this.defaultGuildsRestricted = defaultGuildsRestricted;
+    }
+
+    public void setDetectPlatformAccounts(final boolean detectPlatformAccounts)
+    {
+        this.detectPlatformAccounts = detectPlatformAccounts;
+    }
+
+    public void setDeveloperMode(final boolean developerMode)
+    {
+        this.developerMode = developerMode;
+    }
+
+    public void setEnableTtsCommand(final boolean enableTtsCommand)
+    {
+        this.enableTtsCommand = enableTtsCommand;
+    }
+
+    public void setExplicitContentFilter(final ContentFilterLevel explicitContentFilter)
+    {
+        this.explicitContentFilter = explicitContentFilter;
+    }
+
+    public void setFriendSourceFlags(final Map<String, Boolean> friendSourceFlags)
+    {
+        this.friendSourceFlags = friendSourceFlags;
+    }
+
+    public void setGuildPositions(final List<Guild> guildPositions)
+    {
+        this.guildPositions = guildPositions;
+    }
+
+    public void setInlineAttachmentMedia(final boolean inlineAttachmentMedia)
+    {
+        this.inlineAttachmentMedia = inlineAttachmentMedia;
+    }
+
+    public void setInlineEmbedMedia(final boolean inlineEmbedMedia)
+    {
+        this.inlineEmbedMedia = inlineEmbedMedia;
+    }
+
+    public void setLocale(final Locale locale)
+    {
+        this.locale = locale;
+    }
+
+    public void setMessageDisplayCompact(final boolean messageDisplayCompact)
+    {
+        this.messageDisplayCompact = messageDisplayCompact;
+    }
+
+    public void setRenderEmbeds(final boolean renderEmbeds)
+    {
+        this.renderEmbeds = renderEmbeds;
+    }
+
+    public void setRenderReactions(final boolean renderReactions)
+    {
+        this.renderReactions = renderReactions;
+    }
+
+    public void setRestrictedGuilds(final List<Guild> restrictedGuilds)
+    {
+        this.restrictedGuilds = restrictedGuilds;
+    }
+
+    public void setShowCurrentGame(final boolean showCurrentGame)
+    {
+        this.showCurrentGame = showCurrentGame;
+    }
+
+    public void setStatus(final OnlineStatus status)
+    {
+        this.status = status;
+    }
+
+    public void setTheme(final Theme theme)
+    {
+        this.theme = theme;
+    }
+
+    public void setTimezoneOffset(final int timezoneOffset)
+    {
+        this.timezoneOffset = timezoneOffset;
     }
 
     @Override
     public String toString()
     {
-        return "UserSettings(" + getJDA().getSelfUser() + ")";
+        return "UserSettings(" + this.getJDA().getSelfUser() + ")";
     }
 }

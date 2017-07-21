@@ -25,6 +25,19 @@ public enum RelationshipType
     OUTGOING_FRIEND_REQUEST(4, "OFR"),
     UNKNOWN(-1, "");
 
+    private static final RelationshipType[] KEY_MAP;
+
+    static
+    {
+        KEY_MAP = new RelationshipType[RelationshipType.values().length - 1];
+
+        for (RelationshipType type : RelationshipType.values())
+        {
+            if (type.key >= 0)
+                RelationshipType.KEY_MAP[type.key] = type;
+        }
+    }
+
     private final int key;
     private final String name;
 
@@ -46,11 +59,6 @@ public enum RelationshipType
 
     public static RelationshipType fromKey(int key)
     {
-        for (RelationshipType type : values())
-        {
-            if (type.getKey() == key)
-                return type;
-        }
-        return UNKNOWN;
+        return key >= 0 && key < KEY_MAP.length ? KEY_MAP[key] : UNKNOWN;
     }
 }

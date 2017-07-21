@@ -17,20 +17,23 @@
 package net.dv8tion.jda.client.entities.impl;
 
 import gnu.trove.map.TLongObjectMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import net.dv8tion.jda.client.entities.Call;
 import net.dv8tion.jda.client.entities.Friend;
 import net.dv8tion.jda.client.entities.Group;
-import net.dv8tion.jda.client.entities.Relationship;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
+import net.dv8tion.jda.core.requests.Request;
+import net.dv8tion.jda.core.requests.Response;
 import net.dv8tion.jda.core.requests.RestAction;
+import net.dv8tion.jda.core.requests.Route;
 import net.dv8tion.jda.core.utils.MiscUtil;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class GroupImpl implements Group
 {
@@ -99,47 +102,32 @@ public class GroupImpl implements Group
     @Override
     public List<User> getUsers()
     {
-        return Collections.unmodifiableList(
-                new ArrayList<>(
-                        userMap.valueCollection()));
+        return Collections.unmodifiableList(new ArrayList<>(userMap.valueCollection()));
     }
 
     @Override
     public List<User> getNonFriendUsers()
     {
-        List<User> nonFriends = new ArrayList<>();
-        TLongObjectMap<Relationship> map = ((JDAClientImpl) api.asClient()).getRelationshipMap();
-        userMap.forEachEntry((userId, user) ->
-        {
-            Relationship relationship = map.get(userId);
-            Friend friend = relationship instanceof Friend ? (Friend) relationship : null;
-            if (friend == null)
-                nonFriends.add(user);
-            return true;
-        });
-        return Collections.unmodifiableList(nonFriends);
+        return Collections.unmodifiableList(
+                userMap.valueCollection().stream()
+                .filter(user -> !api.asClient().isFriend(user))
+                .collect(Collectors.toList()));
     }
 
     @Override
     public List<Friend> getFriends()
     {
-        List<Friend> friends = new ArrayList<>();
-        TLongObjectMap<Relationship> map = ((JDAClientImpl) api.asClient()).getRelationshipMap();
-        userMap.forEachKey(userId ->
-        {
-            Relationship relationship = map.get(userId);
-            Friend friend = relationship instanceof Friend ? (Friend) relationship : null;
-            if (friend != null)
-                friends.add(friend);
-            return true;
-        });
-        return Collections.unmodifiableList(friends);
+        return Collections.unmodifiableList(
+                userMap.valueCollection().stream()
+                .map(user -> api.asClient().getFriend(user))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()));
     }
 
     @Override
     public RestAction<Call> startCall()
     {
-        return null;
+        return null; // TODO: startCall() 
     }
 
     @Override
@@ -151,7 +139,18 @@ public class GroupImpl implements Group
     @Override
     public RestAction<Void> leaveGroup()
     {
-        return null;
+        final Route.CompiledRoute route = Route.Channels.DELETE_CHANNEL.compile(this.getId());
+        return new RestAction<Void>(this.getJDA(), route)
+        {
+            @Override
+            protected void handleResponse(final Response response, final Request<Void> request)
+            {
+                if (response.isOk())
+                    request.onSuccess(null);
+                else
+                    request.onFailure(response);
+            }
+        };
     }
 
     @Override

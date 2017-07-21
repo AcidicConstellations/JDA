@@ -77,18 +77,20 @@ public class Route
 
     public static class Users
     {
-        public static final Route GET_USER    = new Route(GET, "users/{user_id}");
-        public static final Route GET_PROFILE = new Route(GET, "users/{user_id}/profile");
-        public static final Route GET_NOTE    = new Route(GET, "users/@me/notes/{user_id}");
-        public static final Route SET_NOTE    = new Route(PUT, "users/@me/notes/{user_id}");
+        public static final Route GET_USER           = new Route(GET, "users/{user_id}");
+        public static final Route GET_PROFILE        = new Route(GET, "users/{user_id}/profile");
+        public static final Route GET_MUTUAL_FRIENDS = new Route(GET, "users/{user_id}/relationships");
+        public static final Route GET_NOTE           = new Route(GET, "users/@me/notes/{user_id}");
+        public static final Route SET_NOTE           = new Route(PUT, "users/@me/notes/{user_id}");
     }
 
     public static class Relationships
     {
-        public static final Route GET_RELATIONSHIPS =   new Route(GET,    "users/@me/relationships"); // Get Friends/Blocks/Incoming/Outgoing
-        public static final Route GET_RELATIONSHIP =    new Route(GET,    "users/@me/relationships/{user_id}");
-        public static final Route ADD_RELATIONSHIP =    new Route(PUT,    "users/@me/relationships/{user_id}"); // Add Friend/ Block / Accept Incoming
-        public static final Route DELETE_RELATIONSHIP = new Route(DELETE, "users/@me/relationships/{user_id}"); // Delete Block/Unfriend/Ignore Request/Cancel Outgoing
+        public static final Route GET_RELATIONSHIPS =       new Route(GET,    "users/@me/relationships"); // Get Friends/Blocks/Incoming/Outgoing
+        public static final Route GET_RELATIONSHIP =        new Route(GET,    "users/@me/relationships/{user_id}");
+        public static final Route ADD_RELATIONSHIP =        new Route(PUT,    "users/@me/relationships/{user_id}"); // Add Friend/ Block / Accept Incoming
+        public static final Route ADD_FRIEND_NAME_DISCRIM = new Route(POST,   "users/@me/relationships"); // Add Friend with name + discrim
+        public static final Route DELETE_RELATIONSHIP =     new Route(DELETE, "users/@me/relationships/{user_id}"); // Delete Block/Unfriend/Ignore Request/Cancel Outgoing
     }
 
     public static class Guilds
@@ -122,11 +124,12 @@ public class Route
         public static final Route ADD_MEMBER_ROLE =    new Route(PUT,    "guilds/{guild_id}/members/{user_id}/roles/{role_id}",  "guild_id");
         public static final Route REMOVE_MEMBER_ROLE = new Route(DELETE, "guilds/{guild_id}/members/{user_id}/roles/{role_id}",  "guild_id");
 
-
         //Client Only
         public static final Route CREATE_GUILD = new Route(POST, "guilds");
         public static final Route DELETE_GUILD = new Route(POST, "guilds/{guild_id}/delete");
         public static final Route ACK_GUILD =    new Route(POST, "guilds/{guild_id}/ack");
+
+        public static final Route SEARCH =       new Route(GET,  "guilds/{guild_id}/messages/search");
 
         public static final Route MODIFY_NOTIFICATION_SETTINGS = new Route(PATCH, "users/@me/guilds/{guild_id}/settings");
     }
@@ -183,6 +186,8 @@ public class Route
         public static final Route REMOVE_RECIPIENT = new Route(DELETE, "channels/{channel_id}/recipients/{user_id}");
         public static final Route START_CALL =       new Route(POST,   "channels/{channel_id}/call/ring");
         public static final Route STOP_CALL =        new Route(POST,   "channels/{channel_id}/call/stop_ringing"); // aka deny or end call
+
+        public static final Route SEARCH =           new Route(GET, "channels/{channel_id}/messages/search");
     }
 
     public static class Messages

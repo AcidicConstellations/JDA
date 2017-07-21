@@ -17,19 +17,29 @@
 package net.dv8tion.jda.core.handle;
 
 import net.dv8tion.jda.client.entities.Relationship;
+import net.dv8tion.jda.client.entities.UserSettings;
+import net.dv8tion.jda.client.entities.UserSettings.ContentFilterLevel;
 import net.dv8tion.jda.client.entities.impl.FriendImpl;
 import net.dv8tion.jda.client.entities.impl.UserSettingsImpl;
+import net.dv8tion.jda.client.events.usersettings.update.*;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.WebSocketCode;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.EntityBuilder;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.impl.GuildImpl;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
+import net.dv8tion.jda.core.entities.impl.UserImpl;
 import net.dv8tion.jda.core.managers.impl.PresenceImpl;
 import net.dv8tion.jda.core.requests.WebSocketClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import java.util.HashSet;
 import java.util.List;
@@ -67,17 +77,85 @@ public class ReadyHandler extends SocketHandler
 
         builder.createSelfUser(selfJson);
 
-        if (api.getAccountType() == AccountType.CLIENT && !content.isNull("user_settings"))
+        if (api.getAccountType() == AccountType.CLIENT)
         {
-            // handle user settings
-            JSONObject userSettingsJson = content.getJSONObject("user_settings");
-            UserSettingsImpl userSettingsObj = (UserSettingsImpl) api.asClient().getSettings();
-            userSettingsObj
-                    // TODO: set all information and handle updates
-                    .setStatus(userSettingsJson.isNull("status") ? OnlineStatus.ONLINE : OnlineStatus.fromKey(userSettingsJson.getString("status")));
-            // update presence information unless the status is ONLINE
-            if (userSettingsObj.getStatus() != OnlineStatus.ONLINE)
-                ((PresenceImpl) api.getPresence()).setCacheStatus(userSettingsObj.getStatus());
+            try // handle user settings
+            {
+                final JSONObject userSettingsJson = content.getJSONObject("user_settings");
+                final UserSettingsImpl userSettings = (UserSettingsImpl) this.api.asClient().getUserSettings();
+
+                final int afkTimeout = userSettingsJson.getInt("afk_timeout");
+                userSettings.setAfkTimeout(afkTimeout);
+
+                final boolean convertEmoticons = userSettingsJson.getBoolean("convert_emoticons");
+                userSettings.setConvertEmoticons(convertEmoticons);
+
+                final boolean defaultGuildsRestricted = userSettingsJson.getBoolean("default_guilds_restricted");
+                userSettings.setDefaultGuildsRestricted(defaultGuildsRestricted);
+
+                final boolean detectPlatformAccounts = userSettingsJson.getBoolean("detect_platform_accounts");
+                userSettings.setDetectPlatformAccounts(detectPlatformAccounts);
+
+                final boolean developerMode = userSettingsJson.getBoolean("developer_mode");
+                userSettings.setDeveloperMode(developerMode);
+
+                final boolean enableTtsCommand = userSettingsJson.getBoolean("enable_tts_command");
+                userSettings.setEnableTtsCommand(enableTtsCommand);
+
+                final ContentFilterLevel explicitContentFilter = UserSettings.ContentFilterLevel.fromKey(userSettingsJson.getInt("explicit_content_filter"));
+                userSettings.setExplicitContentFilter(explicitContentFilter);
+
+                final JSONObject friendSourceFlagsObject = userSettingsJson.getJSONObject("friend_source_flags");
+                final Map<String, Boolean> friendSourceFlags = new HashMap<>(friendSourceFlagsObject.length());
+                for (Entry<String, Object> flag : friendSourceFlagsObject.toMap().entrySet())
+                    friendSourceFlags.put(flag.getKey(), (boolean) flag.getValue());
+
+                final List<Guild> guildPositions = StreamSupport.stream(userSettingsJson.getJSONArray("guild_positions").spliterator(), false).map(o -> api.getGuildById((String) o)).collect(Collectors.toList());
+                userSettings.setGuildPositions(guildPositions);
+
+                final boolean inlineAttachmentMedia = userSettingsJson.getBoolean("inline_attachment_media");
+                userSettings.setEnableTtsCommand(inlineAttachmentMedia);
+
+                final boolean inlineEmbedMedia = userSettingsJson.getBoolean("inline_embed_media");
+                userSettings.setEnableTtsCommand(inlineEmbedMedia);
+
+                final UserSettings.Locale locale = UserSettings.Locale.fromKey(userSettingsJson.getString("locale"));
+                userSettings.setLocale(locale);
+
+                final boolean messageDisplayCompact = userSettingsJson.getBoolean("message_display_compact");
+                userSettings.setMessageDisplayCompact(messageDisplayCompact);
+
+                final boolean renderEmbeds = userSettingsJson.getBoolean("render_embeds");
+                userSettings.setRenderEmbeds(renderEmbeds);
+
+                final boolean renderReactions = userSettingsJson.getBoolean("render_reactions");
+                userSettings.setRenderReactions(renderReactions);
+
+                final List<Guild> restrictedGuilds = StreamSupport.stream(userSettingsJson.getJSONArray("restricted_guilds").spliterator(), false).map(o -> api.getGuildById((String) o)).collect(Collectors.toList());
+                userSettings.setRestrictedGuilds(restrictedGuilds);
+
+                final boolean showCurrentGame = userSettingsJson.getBoolean("show_current_game");
+                userSettings.setShowCurrentGame(showCurrentGame);
+
+                final OnlineStatus status = OnlineStatus.fromKey(userSettingsJson.getString("status"));
+                userSettings.setStatus(status);
+
+                final UserSettings.Theme theme = UserSettings.Theme.fromKey(userSettingsJson.getString("theme"));
+                userSettings.setTheme(theme);
+
+                final int timezoneOffset = userSettingsJson.getInt("timezone_offset");
+                userSettings.setTimezoneOffset(timezoneOffset);
+                this.api.getEventManager().handle(new UserSettingsUpdateTimezoneOffsetEvent(this.api, this.responseNumber, timezoneOffset));
+
+                //             update presence information unless the status is ONLINE
+                if (userSettings.getStatus() != OnlineStatus.ONLINE) // TODO: decide what this should really be
+                    ((PresenceImpl) api.getPresence()).setCacheStatus(userSettings.getStatus());
+            }
+            catch (Exception e)
+            {
+                WebSocketClient.LOG.fatal("an error occured while setting up the user settings");
+                WebSocketClient.LOG.log(e);
+            }
         }
 
         //Keep a list of all guilds in incompleteGuilds that need to be setup (GuildMemberChunk / GuildSync)
@@ -127,29 +205,62 @@ public class ReadyHandler extends SocketHandler
 
         if (api.getAccountType() == AccountType.CLIENT)
         {
-            JSONArray relationships = content.getJSONArray("relationships");
-            JSONArray presences = content.getJSONArray("presences");
-            JSONObject notes = content.getJSONObject("notes");
-            JSONArray readstates = content.has("read_state") ? content.getJSONArray("read_state") : null;
-            JSONArray guildSettings = content.has("user_guild_settings") ? content.getJSONArray("user_guild_settings") : null;
-
-            for (int i = 0; i < relationships.length(); i++)
+            JSONArray relationshipsArray = content.getJSONArray("relationships");
+            JSONArray presencesArray = content.getJSONArray("presences");
+            JSONObject notesObject = content.getJSONObject("notes");
+            JSONArray readstatesArray = content.has("read_state") ? content.getJSONArray("read_state") : null; // TODO: read states
+            JSONArray guildSettingsArray= content.has("user_guild_settings") ? content.getJSONArray("user_guild_settings") : null;
+           
+            for (int i = 0; i < relationshipsArray.length(); i++)
             {
-                JSONObject relationship = relationships.getJSONObject(i);
+                JSONObject relationship = relationshipsArray.getJSONObject(i);
                 Relationship r = builder.createRelationship(relationship);
                 if (r == null)
                     JDAImpl.LOG.fatal("Provided relationship in READY with an unknown type! JSON: " + relationship.toString());
             }
 
-            for (int i = 0; i < presences.length(); i++)
+            for (int i = 0; i < presencesArray.length(); i++)
             {
-                JSONObject presence = presences.getJSONObject(i);
+                JSONObject presence = presencesArray.getJSONObject(i);
                 String userId = presence.getJSONObject("user").getString("id");
                 FriendImpl friend = (FriendImpl) api.asClient().getFriendById(userId);
                 if (friend == null)
                     WebSocketClient.LOG.warn("Received a presence in the Presences array in READY that did not correspond to a cached Friend! JSON: " + presence);
                 else
                     builder.createPresence(friend, presence);
+            }
+
+            for (Entry<String, Object> note : notesObject.toMap().entrySet())
+            {
+                User user = api.getUserById(note.getKey());
+                if (user == null)
+                {
+                    JDAImpl.LOG.fatal("Provided note for unknown user: " + note.toString());
+                    continue;
+                }
+                ((UserImpl)user).setNote((String) note.getValue());
+            }
+
+            for (int i = 0; i < guildSettingsArray.length(); i++)
+            {
+                JSONObject guildSettingJson = guildSettingsArray.getJSONObject(i);
+                try
+                {
+                    api.getEntityBuilder().createGuildSettings(guildSettingJson);
+                }
+                catch (Exception e)
+                {
+                    WebSocketClient.LOG.fatal("An error occured while setting up the guild settings. json: " + guildSettingJson.toString());
+                    WebSocketClient.LOG.log(e);
+                }
+            }
+            for (Guild guild : api.getGuildMap().valueCollection())
+            {
+                if (api.asClient().getGuildSettings(guild) == null)
+                {
+                    WebSocketClient.LOG.debug("Didn't receive a guild setting for " + guild.getName() + '(' + guild.getId() + "), creating default settings");
+                    ((GuildImpl)guild).setGuildSettings(api.getEntityBuilder().createDefaultGuildSettings(guild));
+                }
             }
         }
 

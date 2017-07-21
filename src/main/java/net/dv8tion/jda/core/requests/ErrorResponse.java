@@ -68,6 +68,9 @@ public enum ErrorResponse
     MFA_NOT_ENABLED(    60003, "MFA auth required but not enabled"),
     REACTION_BLOCKED(   90001, "Reaction Blocked"),
 
+    // Client only
+    UNKNOWN_TAG(80004, "No users with DiscordTag exist"),
+
     SERVER_ERROR(           0, "Discord encountered an internal server error! Not good!");
 
 

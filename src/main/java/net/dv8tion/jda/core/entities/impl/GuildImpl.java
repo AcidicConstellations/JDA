@@ -17,6 +17,8 @@
 package net.dv8tion.jda.core.entities.impl;
 
 import gnu.trove.map.TLongObjectMap;
+import net.dv8tion.jda.client.entities.GuildSettings;
+import net.dv8tion.jda.client.entities.impl.GuildSettingsImpl;
 import net.dv8tion.jda.client.requests.restaction.pagination.MentionPaginationAction;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.Permission;
@@ -79,6 +81,9 @@ public class GuildImpl implements Guild
     private Timeout afkTimeout;
     private boolean available;
     private boolean canSendVerification = false;
+
+    // client only
+    private GuildSettingsImpl guildSettings;
 
     public GuildImpl(JDAImpl api, long id)
     {
@@ -809,6 +814,15 @@ public class GuildImpl implements Guild
         return emotes;
     }
 
+    public GuildSettingsImpl getGuildSettings()
+    {
+        return this.guildSettings;
+    }
+
+    public void setGuildSettings(GuildSettingsImpl guildSettings)
+    {
+        this.guildSettings = guildSettings;
+    }
 
     // -- Object overrides --
 
