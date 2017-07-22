@@ -18,8 +18,8 @@ package net.dv8tion.jda.client;
 
 import net.dv8tion.jda.client.entities.*;
 import net.dv8tion.jda.client.requests.restaction.ApplicationAction;
-import net.dv8tion.jda.client.requests.restaction.SearchPaginationAction;
 import net.dv8tion.jda.client.requests.restaction.pagination.MentionPaginationAction;
+import net.dv8tion.jda.client.requests.restaction.pagination.SearchPaginationAction;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.exceptions.ErrorResponseException;
@@ -106,11 +106,11 @@ public interface JDAClient
     /**
      * @throws ErrorResponseException with {@link ErrorResponse#UNKNOWN_TAG}
      */
-    RestAction<Void> sendFriedRequest(String name, int discriminator);
+    RestAction<Void> sendFriendRequest(String name, int discriminator); // TODO: relationship endpoints may be disallowed
 
-    RestAction<Void> sendFriedRequest(User user);
-    RestAction<Void> sendFriedRequest(String user);
-    RestAction<Void> sendFriedRequest(long user);
+    RestAction<Void> sendFriendRequest(User user);
+    RestAction<Void> sendFriendRequest(String user);
+    RestAction<Void> sendFriendRequest(long user);
 
     RestAction<Void> block(User user);
     RestAction<Void> block(String user);

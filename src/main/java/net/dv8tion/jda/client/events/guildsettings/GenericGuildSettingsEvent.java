@@ -17,27 +17,34 @@
 package net.dv8tion.jda.client.events.guildsettings;
 
 import net.dv8tion.jda.client.entities.GuildSettings;
-import net.dv8tion.jda.client.events.usersettings.GenericUserSettingsEvent;
 import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.events.Event;
 
 /**
- * <b><u>GuildSettingsUpdateEvent</u></b><br>
- * Fired whenever a {@link net.dv8tion.jda.client.entities.GuildSettings GuildSettings} is updated.<br>
+ * <b><u>GenericUserSettingsEvent</u></b><br>
+ * Fired whenever a {@link net.dv8tion.jda.client.entities.UserSettings UserSettings} event is fired.<br>
+ * Every UserSettingsEvent is an instance of this event and can be casted. (no exceptions)<br>
  * <br>
- * Use: Detect any GuildSettingsUpdateEvent.
+ * Use: Detect any UserSettingsEvent. <i>(No real use for JDA user)</i>
  */
-public class GuildSettingsUpdateEvent extends GenericUserSettingsEvent
+public abstract class GenericGuildSettingsEvent extends Event
 {
-    private final GuildSettings oldValue;
+    private final Guild guild;
 
-    public GuildSettingsUpdateEvent(final JDA api, final long responseNumber, GuildSettings oldValue)
+    public GenericGuildSettingsEvent(final JDA api, final long responseNumber, final Guild guild)
     {
         super(api, responseNumber);
-        this.oldValue = oldValue;
+        this.guild = guild;
     }
 
-    public GuildSettings getOldValue()
+    public Guild getGuild()
     {
-        return this.oldValue;
+        return this.guild;
+    }
+
+    public GuildSettings getGuildSettings()
+    {
+        return this.api.asClient().getGuildSettings(this.guild);
     }
 }

@@ -1,4 +1,4 @@
-package net.dv8tion.jda.client.requests.restaction;
+package net.dv8tion.jda.client.requests.restaction.pagination;
 
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
@@ -10,13 +10,16 @@ import net.dv8tion.jda.core.requests.Route;
 import net.dv8tion.jda.core.requests.Route.CompiledRoute;
 import net.dv8tion.jda.core.requests.restaction.pagination.PaginationAction;
 import net.dv8tion.jda.core.utils.MiscUtil;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 //TODO: actual pagination including limit (aka offset) and handling total results change while paginating
-public class SearchPaginationAction extends PaginationAction<SearchPaginationAction.SearchResult, SearchPaginationAction>  
+public class SearchPaginationAction extends PaginationAction<SearchPaginationAction.SearchResult, SearchPaginationAction>
 {
     protected static long toEpochMillis(final OffsetDateTime time)
     {
@@ -244,24 +247,42 @@ public class SearchPaginationAction extends PaginationAction<SearchPaginationAct
     @Override
     protected void handleResponse(final Response response, final Request<List<SearchResult>> request)
     {
-        System.out.println(response.getObject());
-    }
+        if (!response.isOk())
+        {
+            request.onFailure(response);
+            return;
+        }
 
-    enum Mode
-    {
-        RECENT,
-        RELEVANT;
+        final JSONObject object = response.getObject();
+
+        final int totalResults = object.getInt("total_results");
+        final String analyticsId = object.getString("analytics_id");
+
+        final JSONArray resultsArray = object.getJSONArray("messages");
+
+        final List<SearchResult> results = new ArrayList<>(resultsArray.length());
+
+        for (int i = 0; i < resultsArray.length(); i++)
+        {
+            final JSONArray messages = resultsArray.getJSONArray(i);
+
+            final Message before = this.api.getEntityBuilder().createMessage(messages.getJSONObject(0));
+            final Message result = this.api.getEntityBuilder().createMessage(messages.getJSONObject(1));
+            final Message after = this.api.getEntityBuilder().createMessage(messages.getJSONObject(2));
+
+            results.add(new SearchResult(totalResults, analyticsId, before, result, after));
+        }
     }
 
     public static class SearchResult
     {
-        protected final int totalResults;
+        protected final Message after;
         protected final String analyticsId;
         protected final Message before;
         protected final Message result;
-        protected final Message after;
+        protected final int totalResults;
 
-        public SearchResult(int totalResults, String analyticsId, Message before, Message result, Message after)
+        public SearchResult(final int totalResults, final String analyticsId, final Message before, final Message result, final Message after)
         {
             this.totalResults = totalResults;
             this.analyticsId = analyticsId;
@@ -270,12 +291,12 @@ public class SearchPaginationAction extends PaginationAction<SearchPaginationAct
             this.after = after;
         }
 
-        public int getTotalResults()
+        public Message getAfter()
         {
-            return this.totalResults;
+            return this.after;
         }
 
-        public String getAnalyticsId()
+        public String getAnalyticsId() // TODO: do we really need this
         {
             return this.analyticsId;
         }
@@ -290,9 +311,15 @@ public class SearchPaginationAction extends PaginationAction<SearchPaginationAct
             return this.result;
         }
 
-        public Message getAfter()
+        public int getTotalResults()
         {
-            return this.after;
+            return this.totalResults;
         }
+    }
+
+    enum Mode
+    {
+        RECENT,
+        RELEVANT;
     }
 }

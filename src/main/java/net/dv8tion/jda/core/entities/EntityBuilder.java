@@ -17,6 +17,8 @@
 package net.dv8tion.jda.core.entities;
 
 import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
+
 import java.awt.Color;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -1319,23 +1321,26 @@ public class EntityBuilder
         }
 
         JSONArray array = object.getJSONArray("channel_overrides");
-        final List<GuildSettings.ChannelOverride> channelOverrides = new ArrayList<>(guild.getTextChannels().size());
-        for (int i = 0; i < array.length(); i++)
-            channelOverrides.add(createGuildSettingsOverride(array.getJSONObject(i))); // TODO: create missing overrides
-
-        final GuildSettings.NotificationLevel messageNotifications = GuildSettings.NotificationLevel.fromKey(object.getInt("message_notifications"));
+        final TLongObjectMap<GuildSettingsImpl.ChannelOverrideImpl> channelOverrides = new TLongObjectHashMap<>(guild.getTextChannels().size());
+        for (int i = 0; i < array.length(); i++) {
+            GuildSettingsImpl.ChannelOverrideImpl override = createGuildSettingsOverride(array.getJSONObject(i));
+            if (override != null)
+                channelOverrides.put(override.getChannel().getIdLong(), override);
+        }
+        // TODO: create missing overrides
+        final GuildSettings.NotificationLevel notificationLevel = GuildSettings.NotificationLevel.fromKey(object.getInt("message_notifications"));
         final boolean mobilePush = object.getBoolean("mobile_push");
         final boolean muted = object.getBoolean("muted");
         final boolean suppressEveryone = object.getBoolean("suppress_everyone");
 
-        GuildSettingsImpl guildSettings = new GuildSettingsImpl(channelOverrides, guild, messageNotifications, mobilePush, muted, suppressEveryone);
+        GuildSettingsImpl guildSettings = new GuildSettingsImpl(channelOverrides, guild, notificationLevel, mobilePush, muted, suppressEveryone);
 
         ((GuildImpl) guild).setGuildSettings(guildSettings);
 
         return guildSettings;
     }
 
-    public GuildSettings.ChannelOverride createGuildSettingsOverride(JSONObject object)
+    public GuildSettingsImpl.ChannelOverrideImpl createGuildSettingsOverride(JSONObject object)
     {
         String channelId= object.getString ("channel_id");
         final TextChannel channel = api.getTextChannelById(channelId);
@@ -1346,33 +1351,33 @@ public class EntityBuilder
             return null;
         }
 
-        final GuildSettings.NotificationLevel messageNotifications = GuildSettings.NotificationLevel.fromKey(object.getInt("message_notifications"));
+        final GuildSettings.NotificationLevel notificationLevel = GuildSettings.NotificationLevel.fromKey(object.getInt("message_notifications"));
         final boolean muted = object.getBoolean("muted");
-        return new GuildSettingsImpl.ChannelOverrideImpl(channel, messageNotifications, muted);
+        return new GuildSettingsImpl.ChannelOverrideImpl(channel, notificationLevel, muted);
     }
 
     public GuildSettingsImpl createDefaultGuildSettings(Guild guild)
     {
-        final List<GuildSettings.ChannelOverride> channelOverrides = new ArrayList<>(guild.getTextChannels().size());
+        final TLongObjectMap<GuildSettingsImpl.ChannelOverrideImpl> channelOverrides = new TLongObjectHashMap<>(guild.getTextChannels().size());
         for (TextChannel channel : guild.getTextChannels())
-            channelOverrides.add(createDefaultGuildSettingsOverride(channel));
+            channelOverrides.put(channel.getIdLong(), createDefaultGuildSettingsOverride(channel));
 
-        final GuildSettings.NotificationLevel messageNotifications = GuildSettings.NotificationLevel.fromKey(guild.getDefaultNotificationLevel().getKey());
+        final GuildSettings.NotificationLevel notificationLevel = GuildSettings.NotificationLevel.fromKey(guild.getDefaultNotificationLevel().getKey());
         final boolean mobilePush = true;
         final boolean muted = false;
         final boolean suppressEveryone = false;;
 
-        GuildSettingsImpl guildSettings = new GuildSettingsImpl(channelOverrides, guild, messageNotifications, mobilePush, muted, suppressEveryone);
+        GuildSettingsImpl guildSettings = new GuildSettingsImpl(channelOverrides, guild, notificationLevel, mobilePush, muted, suppressEveryone);
 
         ((GuildImpl) guild).setGuildSettings(guildSettings);
 
         return guildSettings;
     }
 
-    public GuildSettings.ChannelOverride createDefaultGuildSettingsOverride(TextChannel channel)
+    public GuildSettingsImpl.ChannelOverrideImpl createDefaultGuildSettingsOverride(TextChannel channel)
     {
-        final GuildSettings.NotificationLevel messageNotifications = GuildSettings.NotificationLevel.DEFAULT;
+        final GuildSettings.NotificationLevel notificationLevel = GuildSettings.NotificationLevel.DEFAULT;
         final boolean muted = false;
-        return new GuildSettingsImpl.ChannelOverrideImpl(channel, messageNotifications, muted);
+        return new GuildSettingsImpl.ChannelOverrideImpl(channel, notificationLevel, muted);
     }
 }

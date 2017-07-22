@@ -23,11 +23,17 @@ import java.util.List;
 
 public interface GuildSettings
 {
+    ChannelOverride getChannelOverride(long id);
+
+    ChannelOverride getChannelOverride(String id);
+
+    ChannelOverride getChannelOverride(TextChannel channel);
+
     List<ChannelOverride> getChannelOverrides();
 
     Guild getGuild();
 
-    NotificationLevel getMessageNotifications();
+    NotificationLevel getNotificationLevel();
 
     boolean isMobilePush();
 
@@ -39,7 +45,7 @@ public interface GuildSettings
     {
         TextChannel getChannel();
 
-        NotificationLevel getMessageNotifications();
+        NotificationLevel getNotificationLevel();
 
         boolean isMuted();
     }
@@ -47,10 +53,10 @@ public interface GuildSettings
     public enum NotificationLevel
     {
         ALL_MESSAGES(0),
+        DEFAULT(3),
         MENTIONS_ONLY(1),
         NOTHING(2),
-        DEFAULT(3),
-        
+
         UNKNOWN(-1);
 
         private static final NotificationLevel[] KEY_MAP;
@@ -59,28 +65,26 @@ public interface GuildSettings
         {
             KEY_MAP = new NotificationLevel[NotificationLevel.values().length - 1];
 
-            for (NotificationLevel type : NotificationLevel.values())
-            {
+            for (final NotificationLevel type : NotificationLevel.values())
                 if (type.key >= 0)
                     NotificationLevel.KEY_MAP[type.key] = type;
-            }
+        }
+
+        public static NotificationLevel fromKey(final int key)
+        {
+            return key >= 0 && key < NotificationLevel.KEY_MAP.length ? NotificationLevel.KEY_MAP[key] : UNKNOWN;
         }
 
         private final int key;
 
-        NotificationLevel(int key)
+        NotificationLevel(final int key)
         {
             this.key = key;
         }
 
         public int getKey()
         {
-            return key;
-        }
-
-        public static NotificationLevel fromKey(int key)
-        {
-            return key >= 0 && key < KEY_MAP.length ? KEY_MAP[key] : UNKNOWN;
+            return this.key;
         }
     }
 }

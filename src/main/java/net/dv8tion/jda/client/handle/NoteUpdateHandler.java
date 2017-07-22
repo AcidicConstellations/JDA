@@ -16,12 +16,13 @@
 
 package net.dv8tion.jda.client.handle;
 
-import java.util.Objects;
 import net.dv8tion.jda.client.events.notes.update.NoteUpdateEvent;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.entities.impl.UserImpl;
 import net.dv8tion.jda.core.handle.SocketHandler;
 import org.json.JSONObject;
+
+import java.util.Objects;
 
 public class NoteUpdateHandler extends SocketHandler
 {
@@ -35,12 +36,13 @@ public class NoteUpdateHandler extends SocketHandler
     {
         final UserImpl user = (UserImpl) this.api.getUserById(content.getLong("id"));
 
+        final String oldNote = this.api.asClient().getNote(user);
         final String note = content.getString("note");
 
-        if (!Objects.equals(this.api.asClient().getNote(user), note))
+        if (!Objects.equals(oldNote, note))
         {
             user.setNote(note);
-            this.api.getEventManager().handle(new NoteUpdateEvent(this.api, this.responseNumber, note));
+            this.api.getEventManager().handle(new NoteUpdateEvent(this.api, this.responseNumber, oldNote));
         }
 
         return null;

@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 import net.dv8tion.jda.client.JDAClient;
 import net.dv8tion.jda.client.entities.*;
 import net.dv8tion.jda.client.requests.restaction.ApplicationAction;
-import net.dv8tion.jda.client.requests.restaction.SearchPaginationAction;
 import net.dv8tion.jda.client.requests.restaction.pagination.MentionPaginationAction;
+import net.dv8tion.jda.client.requests.restaction.pagination.SearchPaginationAction;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.impl.GuildImpl;
@@ -487,7 +487,7 @@ public class JDAClientImpl implements JDAClient
     }
 
     @Override
-    public RestAction<Void> sendFriedRequest(String username, int discriminator) // Error 80004
+    public RestAction<Void> sendFriendRequest(String username, int discriminator) // Error 80004
     {
         Route.CompiledRoute route = Route.Relationships.ADD_FRIEND_NAME_DISCRIM.compile();
         JSONObject data = new JSONObject()
@@ -508,23 +508,23 @@ public class JDAClientImpl implements JDAClient
     }
 
     @Override
-    public RestAction<Void> sendFriedRequest(User user)
+    public RestAction<Void> sendFriendRequest(User user)
     {
         Checks.notNull(user, "user");
-        return sendFriedRequest(user.getId());
+        return sendFriendRequest(user.getId());
     }
 
     @Override
-    public RestAction<Void> sendFriedRequest(String user)
+    public RestAction<Void> sendFriendRequest(String user)
     {
         Checks.notNull(user, "user");
         return addRelationship(user, RelationshipType.FRIEND.getKey());
     }
 
     @Override
-    public RestAction<Void> sendFriedRequest(long user)
+    public RestAction<Void> sendFriendRequest(long user)
     {
-        return sendFriedRequest(Long.toUnsignedString(user));
+        return sendFriendRequest(Long.toUnsignedString(user));
     }
 
     @Override
